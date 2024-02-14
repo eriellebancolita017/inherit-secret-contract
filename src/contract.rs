@@ -1,9 +1,13 @@
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, CanonicalAddr, Addr,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Addr,
 };
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg, PasswordResponse, WhiteListResponse, BlockTimeResponse};
 use crate::state::{config, config_read, State};
+use crate::state::PREFIX_REVOKED_PERMITS;
+
+use secret_toolkit::permit::validate;
+use secret_toolkit::permit::Permit;
 
 #[entry_point]
 pub fn instantiate(
@@ -36,7 +40,6 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         // ExecuteMsg::RemoveWhiteList { guest } => try_remove_whitelist(deps, guest),
         ExecuteMsg::ResetWhiteList { whitelist } => try_reset_whitelist(deps, info, whitelist),
         ExecuteMsg::SetElapsedBlockTime { elapsed_blocks } => try_set_elapsed_time(deps, info, elapsed_blocks),
-        ExecuteMsg::GetPassword {} => try_get_password(deps, env, info),
     }
 }
 
@@ -86,29 +89,12 @@ pub fn try_set_elapsed_time(deps: DepsMut, info: MessageInfo, elapsed_blocks: u6
     Ok(Response::default())
 }
 
-fn try_get_password(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
-    let state = config_read(deps.storage).load()?;
-    let sender_address = info.sender.clone();
-
-    if !state.whitelist.contains(&deps.api.addr_canonicalize(&sender_address.to_string())?) {
-        return Err(StdError::generic_err("Unauthorized user!"));
-    }
-
-    if env.block.height < state.creation_height + state.elapsed_blocks {
-        return Err(StdError::generic_err("Time not elapsed yet"));
-    }
-
-    deps.api.debug("get_password successfully!!!");
-    let password = state.password.clone();
-    Ok(Response::new().add_attribute("password", password))
-}
-
-
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetElapsedBlockTime {} => to_binary(&query_elapsed_block_time(deps)?),
         QueryMsg::GetWhiteList {} => to_binary(&query_whitelist(deps)?),
+        QueryMsg::GetPassword { permit } => to_binary(&query_password(deps, _env, permit)?),
     }
 }
 
@@ -126,119 +112,26 @@ fn query_whitelist(deps: Deps ) -> StdResult<WhiteListResponse> {
     Ok(WhiteListResponse { whitelist: whitelist })
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use cosmwasm_std::testing::*;
-//     use cosmwasm_std::{from_binary, Coin, StdError, Uint128};
+fn query_password(deps: Deps, env: Env, permit: Permit,) -> StdResult<PasswordResponse> {
+    let state = config_read(deps.storage).load()?;
+    let contract_address = env.contract.address;
+    let viewer = validate(
+        deps,
+        PREFIX_REVOKED_PERMITS,
+        &permit,
+        contract_address.to_string(),
+        None,
+    );
 
-//     #[test]
-//     fn proper_initialization() {
-//         let mut deps = mock_dependencies();
-//         let info = mock_info(
-//             "creator",
-//             &[Coin {
-//                 denom: "earth".to_string(),
-//                 amount: Uint128::new(1000),
-//             }],
-//         );
-//         let init_msg = InstantiateMsg { count: 17 };
+    if !state.whitelist.contains(&deps.api.addr_canonicalize(deps.api.addr_validate(&viewer?.as_str())?.as_str())?) {
+        return Err(StdError::generic_err("Unauthorized user!"));
+    }
 
-//         // we can just call .unwrap() to assert this was a success
-//         let res = instantiate(deps.as_mut(), mock_env(), info, init_msg).unwrap();
+    if env.block.height < state.creation_height + state.elapsed_blocks {
+        return Err(StdError::generic_err("Time not elapsed yet"));
+    }
 
-//         assert_eq!(0, res.messages.len());
-
-//         // it worked, let's query the state
-//         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
-//         let value: CountResponse = from_binary(&res).unwrap();
-//         assert_eq!(17, value.count);
-//     }
-
-//     #[test]
-//     fn increment() {
-//         let mut deps = mock_dependencies_with_balance(&[Coin {
-//             denom: "token".to_string(),
-//             amount: Uint128::new(2),
-//         }]);
-//         let info = mock_info(
-//             "creator",
-//             &[Coin {
-//                 denom: "token".to_string(),
-//                 amount: Uint128::new(2),
-//             }],
-//         );
-//         let init_msg = InstantiateMsg { count: 17 };
-
-//         let _res = instantiate(deps.as_mut(), mock_env(), info, init_msg).unwrap();
-
-//         // anyone can increment
-//         let info = mock_info(
-//             "anyone",
-//             &[Coin {
-//                 denom: "token".to_string(),
-//                 amount: Uint128::new(2),
-//             }],
-//         );
-
-//         let exec_msg = ExecuteMsg::Increment {};
-//         let _res = execute(deps.as_mut(), mock_env(), info, exec_msg).unwrap();
-
-//         // should increase counter by 1
-//         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
-//         let value: CountResponse = from_binary(&res).unwrap();
-//         assert_eq!(18, value.count);
-//     }
-
-//     #[test]
-//     fn reset() {
-//         let mut deps = mock_dependencies_with_balance(&[Coin {
-//             denom: "token".to_string(),
-//             amount: Uint128::new(2),
-//         }]);
-//         let info = mock_info(
-//             "creator",
-//             &[Coin {
-//                 denom: "token".to_string(),
-//                 amount: Uint128::new(2),
-//             }],
-//         );
-//         let init_msg = InstantiateMsg { count: 17 };
-
-//         let _res = instantiate(deps.as_mut(), mock_env(), info, init_msg).unwrap();
-
-//         // not anyone can reset
-//         let info = mock_info(
-//             "anyone",
-//             &[Coin {
-//                 denom: "token".to_string(),
-//                 amount: Uint128::new(2),
-//             }],
-//         );
-//         let exec_msg = ExecuteMsg::Reset { count: 5 };
-
-//         let res = execute(deps.as_mut(), mock_env(), info, exec_msg);
-
-//         match res {
-//             Err(StdError::GenericErr { .. }) => {}
-//             _ => panic!("Must return unauthorized error"),
-//         }
-
-//         // only the original creator can reset the counter
-//         let info = mock_info(
-//             "creator",
-//             &[Coin {
-//                 denom: "token".to_string(),
-//                 amount: Uint128::new(2),
-//             }],
-//         );
-//         let exec_msg = ExecuteMsg::Reset { count: 5 };
-
-//         let _res = execute(deps.as_mut(), mock_env(), info, exec_msg).unwrap();
-
-//         // should now be 5
-//         let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCount {}).unwrap();
-//         let value: CountResponse = from_binary(&res).unwrap();
-//         assert_eq!(5, value.count);
-//     }
-// }
+    deps.api.debug("get_password successfully!!!");
+    let password = state.password.clone();
+    Ok(PasswordResponse { password: password })
+}

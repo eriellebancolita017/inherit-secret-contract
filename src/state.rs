@@ -22,3 +22,5 @@ pub fn config(storage: &mut dyn Storage) -> Singleton<State> {
 pub fn config_read(storage: &dyn Storage) -> ReadonlySingleton<State> {
     singleton_read(storage, CONFIG_KEY)
 }
+
+pub const PREFIX_REVOKED_PERMITS: &str = "revoked_permits";

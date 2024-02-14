@@ -2,6 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::Addr;
+use secret_toolkit::permit::Permit;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -18,7 +19,6 @@ pub enum ExecuteMsg {
     // RemoveWhiteList { guest: Addr },
     ResetWhiteList { whitelist: Vec<Addr> },
     SetElapsedBlockTime { elapsed_blocks: u64 },
-    GetPassword {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
@@ -26,6 +26,7 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     GetElapsedBlockTime {},
     GetWhiteList {},
+    GetPassword {permit: Permit},
 }
 
 // We define a custom struct for each query response
