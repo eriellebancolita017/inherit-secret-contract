@@ -79,7 +79,7 @@ let try_query = async () => {
     //   code_hash: contractCodeHash,
       contract_address: "secret1lekjax247leuysfplejwk2zx8xmdc9kl3fjsur",
       code_hash: "0f2dce4850331b3596970b9cac8264a2a08ea4982cc67addf17946bff6feacd7",
-      query: { get_white_list: {} },
+      query: { get_elapsed_block_time: {} },
     }).catch(err => console.log(err));
   
     console.log(my_query);
