@@ -10,17 +10,62 @@ function InheritForm({
   elapsedBlockTime,
   setElapsedBlockTime,
   password,
-  SetPassword
+  setPassword
 }) {
   const { connectWallet, secretjs, secretAddress } = useContext(SecretjsContext);
 
-  const { get_elapsed_block_time, set_net_password, set_elapsed_block_time, get_contract_info } =
+  const { get_elapsed_block_time, set_net_password, set_elapsed_block_time, get_contract_info, get_net_password, set_white_list } =
     SecretjsFunctions();
 
   const [elapsedTime, setElapsedTime] = useState(0);
   const [myPassword, setMyPassword] = useState("");
   const [contractAddr, setContractAddr] = useState("");
   const [contractInfo, setContractInfo] = useState();
+  const [signature, setSignature] = useState(null);
+  const [myWhiteList, setMyWhiteList] = useState([]);
+
+  const permitName = "view my password";
+  const chainId = "pulsar-3";
+  const allowedTokens = ["secret1946v0ffcyw38cuj2aklzsadtcjrhjha0u39swh"];
+
+  const viewingPermit = (e) => {
+    e.preventDefault();
+    const create_viewing_permit = async () => {
+      const { signature } = await window.keplr.signAmino(
+        chainId,
+        secretAddress,
+        {
+          chain_id: chainId,
+          account_number: "0", // Must be 0
+          sequence: "0", // Must be 0
+          fee: {
+            amount: [{ denom: "uscrt", amount: "0" }], // Must be 0 uscrt
+            gas: "1", // Must be 1
+          },
+          msgs: [
+            {
+              type: "query_permit", // Must be "query_permit"
+              value: {
+                permit_name: permitName,
+                allowed_tokens: allowedTokens,
+                permissions: [],
+              },
+            },
+          ],
+          memo: "", // Must be empty
+        },
+        {
+          preferNoSetFee: true, // Fee must be 0, so hide it from the user
+          preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+        }
+      );
+      setSignature(signature);
+      console.log(signature);
+    };
+
+    create_viewing_permit();
+  }
+
 
   useEffect(() => {
     if (secretjs && secretAddress) {
@@ -55,8 +100,16 @@ function InheritForm({
   const handleSetPassword = async (e) => {
     e.preventDefault();
     try {
-      SetPassword(myPassword);
-      await set_net_password(myPassword);
+      await set_net_password(password);
+    } catch (error) {
+      alert("Please approve the transaction in keplr.");
+    }
+  };
+
+  const handleSetWhilteList = async (e) => {
+    e.preventDefault();
+    try {
+      await set_white_list(myWhiteList);
     } catch (error) {
       alert("Please approve the transaction in keplr.");
     }
@@ -71,6 +124,32 @@ function InheritForm({
       setElapsedTime(elapsedBlockTime.elapsed_blocks);
     } catch (error) {
       alert("Please approve the transaction in keplr.");
+    }
+  };
+
+  const getNetPassword = async (e) => {
+    e.preventDefault();
+
+    try {
+      const permit = {
+        params: {
+          permit_name: permitName,
+          allowed_tokens: allowedTokens,
+          chain_id: "pulsar-3",
+          permissions: [],
+        },
+        signature: signature,
+      }
+      const netPassword = await get_net_password({permit});
+      console.log(netPassword);
+      if (netPassword.password) {
+        setMyPassword(netPassword.password);
+      } else {
+        alert(netPassword);
+      }
+    } catch (error) {
+      alert("Please approve the transaction in keplr.");
+      console.log(error)
     }
   }
 
@@ -125,7 +204,7 @@ function InheritForm({
                 <input
                   type="text"
                   value={elapsedTime}
-                  placeholder="Name of Millionaire 1"
+                  placeholder="Get Elapsed Block Time"
                   disabled
                   className="block w-full rounded-md border-0 bg-white/5
                 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
@@ -136,6 +215,28 @@ function InheritForm({
               <button onClick={getElapsedBlockTime} className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
                 Get Elapsed Block Time
               </button>
+
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={myPassword}
+                  placeholder="Get Password"
+                  disabled
+                  className="block w-full rounded-md border-0 bg-white/5
+                py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
+                focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
+                sm:leading-6"
+                />
+              </div>
+              <button onClick={getNetPassword} className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                Get Password
+              </button>
+
+              <form onSubmit={viewingPermit}>
+                <button type="submit" className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                  Create Permit
+                </button>
+              </form>
             </div>
           </div>
 
@@ -145,7 +246,7 @@ function InheritForm({
             (
               <div className="space-y-2">
                 <p className="text-white">Owner</p>
-                <div className="border-4 rounded-lg p-2 ">
+                <div className="border-4 rounded-lg p-2 space-y-4">
                   <form onSubmit={handleSubmitElapsedBlockTime}>
                     <div className="flex items-center justify-between ">
                       <label className="block text-sm font-medium leading-6 text-white">
@@ -170,6 +271,56 @@ function InheritForm({
                       Set Elapsed Block Time
                     </button>
                   </form>
+
+                  <form onSubmit={handleSetPassword}>
+                    <div className="flex items-center justify-between ">
+                      <label className="block text-sm font-medium leading-6 text-white">
+                        Set Inherit Password
+                      </label>
+                    </div>
+
+                    <div className="mt-2">
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Input the password"
+                        required
+                        className="block w-full rounded-md border-0 bg-white/5
+                    py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
+                    focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
+                    sm:leading-6"
+                      />
+                    </div>
+                    <button type="submit" className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                      Set Inherit Password
+                    </button>
+                  </form>
+
+                  <form onSubmit={handleSetWhilteList}>
+                    <div className="flex items-center justify-between ">
+                      <label className="block text-sm font-medium leading-6 text-white">
+                        Set Whitelist
+                      </label>
+                    </div>
+
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={myWhiteList}
+                        onChange={(e) => setMyWhiteList(e.target.value.split(", "))}
+                        placeholder="Input the addresses dividing by comma"
+                        required
+                        className="block w-full rounded-md border-0 bg-white/5
+                    py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
+                    focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
+                    sm:leading-6"
+                      />
+                    </div>
+                    <button type="submit" className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                      Set Whitelist
+                    </button>
+                  </form>
                 </div>
               </div>
             )
@@ -186,15 +337,6 @@ function InheritForm({
           </p>
         </div>
       </div>
-      {/* <RicherModal
-        richerModalOpen={richerModalOpen}
-        setRicherModalOpen={setRicherModalOpen}
-        myQuery={myQuery}
-      />
-      <ResetModal
-        resetModalOpen={resetModalOpen}
-        setResetModalOpen={setResetModalOpen}
-      /> */}
     </>
   );
 }
