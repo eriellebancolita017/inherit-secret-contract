@@ -19,7 +19,7 @@ function InheritForm({
 
   const [elapsedTime, setElapsedTime] = useState({});
   const [myPassword, setMyPassword] = useState("");
-  const [contractAddr, setContractAddr] = useState("");
+  // const [contractAddr, setContractAddr] = useState("");
   const [contractInfo, setContractInfo] = useState();
   const [signature, setSignature] = useState(null);
   const [myWhiteList, setMyWhiteList] = useState([]);
@@ -148,8 +148,14 @@ function InheritForm({
         alert(netPassword);
       }
     } catch (error) {
-      alert("Please approve the transaction in keplr.");
+      alert("Please approve the transaction in keplr!");
       console.log(error)
+    }
+  }
+
+  const handleWhiteList = (e) => {
+    if(e.target.value != "") {
+      setMyWhiteList(e.target.value.split(",").map(str => str.trim()))
     }
   }
 
@@ -227,7 +233,7 @@ function InheritForm({
 
               <form onSubmit={viewingPermit}>
                 <button type="submit" className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-                  Create Permit
+                  Check Permit
                 </button>
               </form>
             </div>
@@ -300,8 +306,8 @@ function InheritForm({
                     <div className="mt-2">
                       <input
                         type="text"
-                        value={myWhiteList}
-                        onChange={(e) => setMyWhiteList(e.target.value.split(", "))}
+                        value={myWhiteList.join(", ")}
+                        onChange={handleWhiteList}
                         placeholder="Input the addresses dividing by comma"
                         required
                         className="block w-full rounded-md border-0 bg-white/5
