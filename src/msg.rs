@@ -43,6 +43,8 @@ pub struct WhiteListResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 pub struct BlockTimeResponse {
     pub elapsed_blocks: u64,
+    pub estimate_blocks: u64,
+    pub current_blocks: u64,
 }
 
 

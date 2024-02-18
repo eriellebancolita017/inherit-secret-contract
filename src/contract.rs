@@ -92,16 +92,19 @@ pub fn try_set_elapsed_time(deps: DepsMut, info: MessageInfo, elapsed_blocks: u6
 #[entry_point]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::GetElapsedBlockTime {} => to_binary(&query_elapsed_block_time(deps)?),
+        QueryMsg::GetElapsedBlockTime {} => to_binary(&query_elapsed_block_time(deps, _env)?),
         QueryMsg::GetWhiteList {} => to_binary(&query_whitelist(deps)?),
         QueryMsg::GetPassword { permit } => to_binary(&query_password(deps, _env, permit)?),
     }
 }
 
-fn query_elapsed_block_time(deps:Deps) -> StdResult<BlockTimeResponse> {
+fn query_elapsed_block_time(deps:Deps, _env: Env) -> StdResult<BlockTimeResponse> {
     let state = config_read(deps.storage).load()?;
-
-    Ok(BlockTimeResponse { elapsed_blocks: state.elapsed_blocks })
+    Ok(BlockTimeResponse {
+        elapsed_blocks: state.elapsed_blocks,
+        estimate_blocks: state.elapsed_blocks + state.creation_height,
+        current_blocks: _env.block.height,
+    })
 }
 
 

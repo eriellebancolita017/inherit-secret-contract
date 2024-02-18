@@ -17,7 +17,7 @@ function InheritForm({
   const { get_elapsed_block_time, set_net_password, set_elapsed_block_time, get_contract_info, get_net_password, set_white_list } =
     SecretjsFunctions();
 
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState({});
   const [myPassword, setMyPassword] = useState("");
   const [contractAddr, setContractAddr] = useState("");
   const [contractInfo, setContractInfo] = useState();
@@ -26,7 +26,7 @@ function InheritForm({
 
   const permitName = "view my password";
   const chainId = "pulsar-3";
-  const allowedTokens = ["secret1946v0ffcyw38cuj2aklzsadtcjrhjha0u39swh"];
+  const allowedTokens = ["secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc"];
 
   const viewingPermit = (e) => {
     e.preventDefault();
@@ -121,7 +121,7 @@ function InheritForm({
     try {
       const elapsedBlockTime = await get_elapsed_block_time();
       console.log(elapsedBlockTime);
-      setElapsedTime(elapsedBlockTime.elapsed_blocks);
+      setElapsedTime(elapsedBlockTime);
     } catch (error) {
       alert("Please approve the transaction in keplr.");
     }
@@ -175,7 +175,7 @@ function InheritForm({
           <div className="space-y-2">
             <p className="text-white">Guest</p>
             <div className="border-4 rounded-lg p-2 ">
-              <div className="flex items-center justify-between ">
+              {/* <div className="flex items-center justify-between ">
                 <label className="block text-sm font-medium leading-6 text-white">
                   Contract Address
                 </label>
@@ -193,27 +193,20 @@ function InheritForm({
                 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
                 sm:leading-6"
                 />
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <label className="block text-sm font-medium leading-6 text-white">
-                  Elapsed Block Time
-                </label>
-              </div>
-
-              <div className="mt-2">
-                <input
-                  type="text"
-                  value={elapsedTime}
-                  placeholder="Get Elapsed Block Time"
-                  disabled
-                  className="block w-full rounded-md border-0 bg-white/5
-                py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
-                focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
-                sm:leading-6"
-                />
+              </div> */}
+              <div className="flex flex-col items-center justify-between mt-2">
+                <p className="block w-full text-sm font-medium leading-6 text-white">
+                  Elapsed Block Time: {elapsedTime?.elapsed_blocks}
+                </p>
+                <p className="block w-full text-sm font-medium leading-6 text-white">
+                  Current Block Time: {elapsedTime?.current_blocks}
+                </p>
+                <p className="block w-full text-sm font-medium leading-6 text-white">
+                  Estimated Block Time: {elapsedTime?.estimate_blocks}
+                </p>
               </div>
               <button onClick={getElapsedBlockTime} className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-                Get Elapsed Block Time
+                Get Time List
               </button>
 
               <div className="mt-2">

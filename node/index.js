@@ -51,12 +51,12 @@ let instantiate_contract = async () => {
     let tx = await secretjs.tx.compute.instantiateContract(
       {
         // code_id: codeId,
-        code_id: 4462,
+        code_id: 4464,
         sender: wallet.address,
         // code_hash: contractCodeHash,
-        code_hash: "0f2dce4850331b3596970b9cac8264a2a08ea4982cc67addf17946bff6feacd7",
+        code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690",
         init_msg: initMsg,
-        label: "My second inherit secret contract",
+        label: "My forth inherit secret contract",
       },
       {
         gasLimit: 400_000,
@@ -71,27 +71,30 @@ let instantiate_contract = async () => {
     console.log(contractAddress);
 };
   
-instantiate_contract();
+// instantiate_contract();
 
 let try_query = async () => {
     const my_query = await secretjs.query.compute.queryContract({
     //   contract_address: contract_address,
     //   code_hash: contractCodeHash,
-      contract_address: "secret1946v0ffcyw38cuj2aklzsadtcjrhjha0u39swh",
-      code_hash: "0f2dce4850331b3596970b9cac8264a2a08ea4982cc67addf17946bff6feacd7",
-      query: { get_password: {
-        permit: {
-          params: {
-            "permit_name": "view my password",
-            "allowed_tokens": [
-                "secret1946v0ffcyw38cuj2aklzsadtcjrhjha0u39swh"
-            ],
-            "chain_id": "pulsar-3",
-            "permissions": []
-          },
-          signature: "vMOW+c/wBr8GwYXlin+moTQwmG+aLddDHdyyyPkmI2wo5iAcIY0yGkmUrYy5NgoMTI+4xTC9CZHpOwK6Z1adeA==",
-        }
-      } },
+      contract_address: "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc",
+      code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690",
+      // query: { get_password: {
+      //   permit: {
+      //     params: {
+      //       "permit_name": "view my password",
+      //       "allowed_tokens": [
+      //           "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc"
+      //       ],
+      //       "chain_id": "pulsar-3",
+      //       "permissions": []
+      //     },
+      //     signature: "vMOW+c/wBr8GwYXlin+moTQwmG+aLddDHdyyyPkmI2wo5iAcIY0yGkmUrYy5NgoMTI+4xTC9CZHpOwK6Z1adeA==",
+      //   }
+      // } },
+      query: {
+        get_elapsed_block_time: {}
+      }
     }).catch(err => console.log(err));
   
     console.log(my_query);
@@ -103,8 +106,8 @@ let try_execute = async () => {
     let tx = await secretjs.tx.compute.executeContract(
       {
         sender: wallet.address,
-        contract_address: "secret1946v0ffcyw38cuj2aklzsadtcjrhjha0u39swh",
-        code_hash: "0f2dce4850331b3596970b9cac8264a2a08ea4982cc67addf17946bff6feacd7", // optional but way faster
+        contract_address: "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc",
+        code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690", // optional but way faster
         msg: {
           reset_white_list: {whitelist: ["secret1yufr2hav2eyaqny9qjulwlqmzg08m9aduc4ly9", "secret1dcufar7e2mj22jaemfz48kgrpzy4xgrq9gr304"]},
         },
