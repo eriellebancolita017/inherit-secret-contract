@@ -8,6 +8,7 @@ const SECRET_LCD = "https://api.pulsar3.scrttestnet.com";
 const SecretjsContextProvider = ({ children }) => {
   const [secretjs, setSecretjs] = useState(null);
   const [secretAddress, setSecretAddress] = useState("");
+  const [contractAddr, setContractAddr] = useState("");
 
   async function setupKeplr(setSecretjs, setSecretAddress) {
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -82,6 +83,8 @@ const SecretjsContextProvider = ({ children }) => {
         setSecretjs,
         secretAddress,
         setSecretAddress,
+        contractAddr,
+        setContractAddr,
         connectWallet,
         disconnectWallet,
       }}

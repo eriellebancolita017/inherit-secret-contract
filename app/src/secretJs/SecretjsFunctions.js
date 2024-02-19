@@ -3,14 +3,13 @@ import { SecretjsContext } from "./SecretjsContext";
 
 let contractCodeHash =
   "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690";
-let contractAddress = "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc";
 
 const SecretjsFunctions = () => {
-  const { secretjs, secretAddress } = useContext(SecretjsContext);
+  const { secretjs, secretAddress, contractAddr } = useContext(SecretjsContext);
 
   let get_contract_info = async () => {
     const query = await secretjs.query.compute.contractInfo({
-      contract_address: contractAddress,
+      contract_address: contractAddr,
       code_hash: contractCodeHash
     });
 
@@ -21,7 +20,7 @@ const SecretjsFunctions = () => {
 
   let get_elapsed_block_time = async () => {
     const query = await secretjs.query.compute.queryContract({
-      contract_address: contractAddress,
+      contract_address: contractAddr,
       code_hash: contractCodeHash,
       query: { get_elapsed_block_time: {} },
     });
@@ -30,10 +29,20 @@ const SecretjsFunctions = () => {
     return query;
   };
 
+  let get_white_list = async () => {
+    const query = await secretjs.query.compute.queryContract({
+      contract_address: contractAddr,
+      code_hash: contractCodeHash,
+      query: { get_white_list: {} },
+    });
+
+    return query;
+  }
+
   let get_net_password = async (data) => {
     console.log("permit => ", data)
     const query = await secretjs.query.compute.queryContract({
-      contract_address: contractAddress,
+      contract_address: contractAddr,
       code_hash: contractCodeHash,
       query: {
         get_password: {
@@ -50,7 +59,7 @@ const SecretjsFunctions = () => {
     const set_block_time_tx = await secretjs.tx.compute.executeContract(
       {
         sender: secretAddress,
-        contract_address: contractAddress,
+        contract_address: contractAddr,
         msg: {
           set_elapsed_block_time: {
             elapsed_blocks: elapsedBlocks
@@ -71,7 +80,7 @@ const SecretjsFunctions = () => {
     const set_password_tx = await secretjs.tx.compute.executeContract(
       {
         sender: secretAddress,
-        contract_address: contractAddress,
+        contract_address: contractAddr,
         msg: {
           set_password: {
             password: password
@@ -91,7 +100,7 @@ const SecretjsFunctions = () => {
     const set_whitelist_tx = await secretjs.tx.compute.executeContract(
       {
         sender: secretAddress,
-        contract_address: contractAddress,
+        contract_address: contractAddr,
         msg: {
           reset_white_list: {
             whitelist: whitelist
@@ -111,6 +120,7 @@ const SecretjsFunctions = () => {
     get_elapsed_block_time,
     get_contract_info,
     get_net_password,
+    get_white_list,
     set_net_password,
     set_elapsed_block_time,
     set_white_list,

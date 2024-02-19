@@ -3,8 +3,9 @@ import SecretToken from "./SecretToken";
 import { WalletIcon } from "@heroicons/react/24/outline";
 import { SecretjsContext } from "../secretJs/SecretjsContext";
 import { SecretjsFunctions } from "../secretJs/SecretjsFunctions";
+import { useNavigate } from "react-router-dom";
 
-function InheritForm({
+function InteractForm({
   whitelist,
   setWhitelist,
   elapsedBlockTime,
@@ -12,14 +13,13 @@ function InheritForm({
   password,
   setPassword
 }) {
-  const { connectWallet, secretjs, secretAddress } = useContext(SecretjsContext);
-
-  const { get_elapsed_block_time, set_net_password, set_elapsed_block_time, get_contract_info, get_net_password, set_white_list } =
+  const { connectWallet, secretjs, secretAddress, contractAddr } = useContext(SecretjsContext);
+  const navigate = useNavigate();
+  const { get_elapsed_block_time, set_net_password, set_elapsed_block_time, get_contract_info, get_net_password, set_white_list, get_white_list } =
     SecretjsFunctions();
 
   const [elapsedTime, setElapsedTime] = useState({});
   const [myPassword, setMyPassword] = useState("");
-  // const [contractAddr, setContractAddr] = useState("");
   const [contractInfo, setContractInfo] = useState();
   const [signature, setSignature] = useState(null);
   const [myWhiteList, setMyWhiteList] = useState([]);
@@ -85,6 +85,13 @@ function InheritForm({
       });
     }
   }, [connectWallet, secretjs, secretAddress]);
+
+
+  useEffect(() => {
+    if(contractAddr.length === 0) {
+      navigate("/");
+    }
+  }, []);
 
   const handleSubmitElapsedBlockTime = async (e) => {
     e.preventDefault();
@@ -153,6 +160,18 @@ function InheritForm({
     }
   }
 
+  const getWhiteList = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await get_white_list();
+      console.log(response);
+      setWhitelist(response.whitelist);
+    } catch (error) {
+      alert("Please approve the transaction in keplr.");
+    }
+  }
+
   const handleWhiteList = (e) => {
     if(e.target.value != "") {
       setMyWhiteList(e.target.value.split(",").map(str => str.trim()))
@@ -181,25 +200,6 @@ function InheritForm({
           <div className="space-y-2">
             <p className="text-white">Guest</p>
             <div className="border-4 rounded-lg p-2 ">
-              {/* <div className="flex items-center justify-between ">
-                <label className="block text-sm font-medium leading-6 text-white">
-                  Contract Address
-                </label>
-              </div>
-
-              <div className="mt-2">
-                <input
-                  type="text"
-                  value={contractAddr}
-                  onChange={(e) => setContractAddr(e.target.value)}
-                  placeholder="Input the contract address"
-                  required
-                  className="block w-full rounded-md border-0 bg-white/5
-                py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10
-                focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
-                sm:leading-6"
-                />
-              </div> */}
               <div className="flex flex-col items-center justify-between mt-2">
                 <p className="block w-full text-sm font-medium leading-6 text-white">
                   Elapsed Block Time: {elapsedTime?.elapsed_blocks}
@@ -246,6 +246,12 @@ function InheritForm({
               <div className="space-y-2">
                 <p className="text-white">Owner</p>
                 <div className="border-4 rounded-lg p-2 space-y-4">
+                <p className="block w-full text-sm font-medium leading-6 text-white">
+                  Whitelist: {whitelist && ('[' + whitelist.join(", ") + ']')}
+                </p>
+                  <button onClick={getWhiteList} className="flex w-full mx-auto mt-2 justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                    Get Whitelist
+                  </button>
                   <form onSubmit={handleSubmitElapsedBlockTime}>
                     <div className="flex items-center justify-between ">
                       <label className="block text-sm font-medium leading-6 text-white">
@@ -340,4 +346,4 @@ function InheritForm({
   );
 }
 
-export default InheritForm;
+export default InteractForm;

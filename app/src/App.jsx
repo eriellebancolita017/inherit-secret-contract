@@ -1,24 +1,19 @@
-import { useState } from 'react'
 import './App.css'
-import InheritForm from './components/InheritForm';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import HomePage from './pages/HomePage';
+import InstantiatePage from './pages/InstantiatePage';
+import InteractPage from './pages/InteractPage';
 
 function App() {
-  const [whitelist, setWhitelist] = useState([]);
-  const [elapsedBlockTime, setElapsedBlockTime] = useState(0);
-  const [password, setPassword] = useState("");
-
   return (
-    <div className='App'>
-      <InheritForm
-        whitelist={whitelist}
-        setWhitelist={setWhitelist}
-        elapsedBlockTime={elapsedBlockTime}
-        setElapsedBlockTime={setElapsedBlockTime}
-        password={password}
-        setPassword={setPassword}
-      />
-    </div>
+    <Router>
+      <Routes>
+        <Route path='/' element={<HomePage />} />
+        <Route path='/instantiate' element={<InstantiatePage />} />
+        <Route path='/interact' element={<InteractPage />} />
+      </Routes>
+    </Router>
   )
 }
 
-export default App
+export default App;
