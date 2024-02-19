@@ -26,7 +26,7 @@ function InteractForm({
 
   const permitName = "view my password";
   const chainId = "pulsar-3";
-  const allowedTokens = ["secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc"];
+  const allowedTokens = [contractAddr];
 
   const viewingPermit = (e) => {
     e.preventDefault();
