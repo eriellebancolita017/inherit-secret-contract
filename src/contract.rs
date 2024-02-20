@@ -66,11 +66,15 @@ pub fn try_add_whitelist(deps: DepsMut, info: MessageInfo, guest: Addr) -> StdRe
         if sender_address != state.owner {
             return Err(StdError::generic_err("Only the owner can add the whitelist!!"));
         }
-        if state.whitelist.contains(&guest) {
-            return Err(StdError::generic_err("There is already an address {} exist", guest));
+
+        let guest_canonical = deps.api.addr_canonicalize(&guest.to_string())?;
+
+        if state.whitelist.contains(&guest_canonical) {
+            let error_message = format!("There is already an address {} exist", guest_canonical);
+            return Err(StdError::generic_err(error_message));
         }
     
-        state.whitelist.push(guest);
+        state.whitelist.push(guest_canonical);
         Ok(state)
     })?;
 
@@ -90,11 +94,14 @@ pub fn try_remove_whitelist(deps: DepsMut, info: MessageInfo, guest: Addr) -> St
             return Err(StdError::generic_err("Can't remove owner address in whitelist!"));
         }
 
-        if !state.whitelist.contains(&guest) {
-            return Err(StdError::generic_err("There is no {} exist", guest));
+        let guest_canonical = deps.api.addr_canonicalize(&guest.to_string())?;
+
+        if !state.whitelist.contains(&guest_canonical) {
+            let error_message = format!("There is no address {} exist", guest_canonical);
+            return Err(StdError::generic_err(error_message));
         }
     
-        state.whitelist.retain(|x| x != &guest);
+        state.whitelist.retain(|x| x != &guest_canonical);
         Ok(state)
     })?;
 
