@@ -141,6 +141,8 @@ const SecretjsFunctions = () => {
 
     if (add_whitelist_tx.rawLog && !add_whitelist_tx.arrayLog) {
       alert(add_whitelist_tx.rawLog);
+    } else {
+      alert(guest + " added successfully!");
     }
   }
 
@@ -164,6 +166,8 @@ const SecretjsFunctions = () => {
     console.log(remove_whitelist_tx);
     if (remove_whitelist_tx.rawLog && !remove_whitelist_tx.arrayLog) {
       alert(remove_whitelist_tx.rawLog);
+    } else {
+      alert(guest + " removed successfully!");
     }
   }
 
@@ -187,6 +191,8 @@ const SecretjsFunctions = () => {
     console.log(set_whitelist_tx);
     if (set_whitelist_tx.rawLog && !set_whitelist_tx.arrayLog) {
       alert(set_whitelist_tx.rawLog);
+    } else {
+      alert("WhiteList reset successfully!");
     }
   }
 
