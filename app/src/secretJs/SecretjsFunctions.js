@@ -2,19 +2,19 @@ import { useContext } from "react";
 import { SecretjsContext } from "./SecretjsContext";
 
 let contractCodeHash =
-  "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690";
+  "e4f7cc9b5c5928d5bd93cd1f3a8d77714c8e76e4e78cc4c49e1141e13afb2043";
 
 const SecretjsFunctions = () => {
   const { secretjs, secretAddress, contractAddr } = useContext(SecretjsContext);
 
-  let instantiate_contract = async ({password, elapsedBlocks, whitelist}) => {
+  let instantiate_contract = async ({ password, elapsedBlocks, whitelist }) => {
     const initMsg = { password: password, whitelist: [...whitelist, secretAddress], elapsed_blocks: Number(elapsedBlocks) };
     console.log("initMsg => ", initMsg)
     let tx = await secretjs.tx.compute.instantiateContract(
       {
-        code_id: 4464,
+        code_id: 4842,
         sender: secretAddress,
-        code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690",
+        code_hash: "e4f7cc9b5c5928d5bd93cd1f3a8d77714c8e76e4e78cc4c49e1141e13afb2043",
         init_msg: initMsg,
         label: "Inherit Secret Contract" + Math.ceil(Math.random() * 10000),
       },
@@ -22,7 +22,7 @@ const SecretjsFunctions = () => {
         gasLimit: 400_000,
       }
     );
-  
+
     //Find the contract_address in the logs
     const contractAddress = tx.arrayLog.find(
       (log) => log.type === "message" && log.key === "contract_address"
@@ -120,6 +120,53 @@ const SecretjsFunctions = () => {
     console.log(set_password_tx);
   };
 
+  let add_white_list = async (guest) => {
+    const add_whitelist_tx = await secretjs.tx.compute.executeContract(
+      {
+        sender: secretAddress,
+        contract_address: contractAddr,
+        msg: {
+          add_white_list: {
+            guest: guest
+          }
+        },
+        code_hash: contractCodeHash,
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+
+    console.log(add_whitelist_tx);
+
+    if (add_whitelist_tx.rawLog && !add_whitelist_tx.arrayLog) {
+      alert(add_whitelist_tx.rawLog);
+    }
+  }
+
+  let remove_white_list = async (guest) => {
+    const remove_whitelist_tx = await secretjs.tx.compute.executeContract(
+      {
+        sender: secretAddress,
+        contract_address: contractAddr,
+        msg: {
+          remove_white_list: {
+            guest: guest
+          }
+        },
+        code_hash: contractCodeHash,
+      },
+      {
+        gasLimit: 100_000,
+      }
+    );
+
+    console.log(remove_whitelist_tx);
+    if (remove_whitelist_tx.rawLog && !remove_whitelist_tx.arrayLog) {
+      alert(remove_whitelist_tx.rawLog);
+    }
+  }
+
   let set_white_list = async (whitelist) => {
     const set_whitelist_tx = await secretjs.tx.compute.executeContract(
       {
@@ -127,7 +174,7 @@ const SecretjsFunctions = () => {
         contract_address: contractAddr,
         msg: {
           reset_white_list: {
-            whitelist: whitelist
+            whitelist: [...whitelist, secretAddress]
           }
         },
         code_hash: contractCodeHash,
@@ -138,6 +185,9 @@ const SecretjsFunctions = () => {
     );
 
     console.log(set_whitelist_tx);
+    if (set_whitelist_tx.rawLog && !set_whitelist_tx.arrayLog) {
+      alert(set_whitelist_tx.rawLog);
+    }
   }
 
   return {
@@ -148,6 +198,8 @@ const SecretjsFunctions = () => {
     get_white_list,
     set_net_password,
     set_elapsed_block_time,
+    add_white_list,
+    remove_white_list,
     set_white_list,
   };
 };

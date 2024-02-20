@@ -43,7 +43,7 @@ let upload_contract = async () => {
     
 };
   
-// upload_contract();
+upload_contract();
 
 let instantiate_contract = async () => {
     // Create an instance of the Inherit contract, providing a initial Message
@@ -51,10 +51,10 @@ let instantiate_contract = async () => {
     let tx = await secretjs.tx.compute.instantiateContract(
       {
         // code_id: codeId,
-        code_id: 4464,
+        code_id: 4842,
         sender: wallet.address,
         // code_hash: contractCodeHash,
-        code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690",
+        code_hash: "e4f7cc9b5c5928d5bd93cd1f3a8d77714c8e76e4e78cc4c49e1141e13afb2043",
         init_msg: initMsg,
         label: "My forth inherit secret contract",
       },
@@ -78,7 +78,7 @@ let try_query = async () => {
     //   contract_address: contract_address,
     //   code_hash: contractCodeHash,
       contract_address: "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc",
-      code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690",
+      code_hash: "e4f7cc9b5c5928d5bd93cd1f3a8d77714c8e76e4e78cc4c49e1141e13afb2043",
       // query: { get_password: {
       //   permit: {
       //     params: {
@@ -107,7 +107,7 @@ let try_execute = async () => {
       {
         sender: wallet.address,
         contract_address: "secret1lsjhas7jp7t6pan6r23tc4muffrrh9xcr742kc",
-        code_hash: "5734d55911b0086059bae1e76879fd7af7aff8e0c8dc140fd88526aa923fa690", // optional but way faster
+        code_hash: "e4f7cc9b5c5928d5bd93cd1f3a8d77714c8e76e4e78cc4c49e1141e13afb2043", // optional but way faster
         msg: {
           reset_white_list: {whitelist: ["secret1yufr2hav2eyaqny9qjulwlqmzg08m9aduc4ly9", "secret1dcufar7e2mj22jaemfz48kgrpzy4xgrq9gr304"]},
         },
