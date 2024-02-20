@@ -15,8 +15,8 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     SetPassword { password: String },
-    // AddWhiteList { guest: Addr },
-    // RemoveWhiteList { guest: Addr },
+    AddWhiteList { guest: Addr },
+    RemoveWhiteList { guest: Addr },
     ResetWhiteList { whitelist: Vec<Addr> },
     SetElapsedBlockTime { elapsed_blocks: u64 },
 }

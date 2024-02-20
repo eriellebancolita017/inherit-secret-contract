@@ -36,8 +36,8 @@ pub fn instantiate(
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
         ExecuteMsg::SetPassword { password } => try_set_password(deps, info, env, password),
-        // ExecuteMsg::AddWhiteList { guest } => try_add_whitelist(deps, guest),
-        // ExecuteMsg::RemoveWhiteList { guest } => try_remove_whitelist(deps, guest),
+        ExecuteMsg::AddWhiteList { guest } => try_add_whitelist(deps, info, guest),
+        ExecuteMsg::RemoveWhiteList { guest } => try_remove_whitelist(deps, info, guest),
         ExecuteMsg::ResetWhiteList { whitelist } => try_reset_whitelist(deps, info, whitelist),
         ExecuteMsg::SetElapsedBlockTime { elapsed_blocks } => try_set_elapsed_time(deps, info, elapsed_blocks),
     }
@@ -56,6 +56,49 @@ pub fn try_set_password(deps: DepsMut, info: MessageInfo, env: Env, password: St
     })?;
 
     deps.api.debug("password saved successfully!");
+    Ok(Response::default())
+}
+
+pub fn try_add_whitelist(deps: DepsMut, info: MessageInfo, guest: Addr) -> StdResult<Response> {
+    let sender_address = info.sender.clone();
+
+    config(deps.storage).update(|mut state| -> Result<_, StdError> {
+        if sender_address != state.owner {
+            return Err(StdError::generic_err("Only the owner can add the whitelist!!"));
+        }
+        if state.whitelist.contains(&guest) {
+            return Err(StdError::generic_err("There is already an address {} exist", guest));
+        }
+    
+        state.whitelist.push(guest);
+        Ok(state)
+    })?;
+
+    deps.api.debug("Guest added correctly!!");
+    Ok(Response::default())
+}
+
+pub fn try_remove_whitelist(deps: DepsMut, info: MessageInfo, guest: Addr) -> StdResult<Response> {
+    let sender_address = info.sender.clone();
+
+    config(deps.storage).update(|mut state| -> Result<_, StdError> {
+        if sender_address != state.owner {
+            return Err(StdError::generic_err("Only the owner can add the whitelist!!"));
+        }
+
+        if state.owner == guest {
+            return Err(StdError::generic_err("Can't remove owner address in whitelist!"));
+        }
+
+        if !state.whitelist.contains(&guest) {
+            return Err(StdError::generic_err("There is no {} exist", guest));
+        }
+    
+        state.whitelist.retain(|x| x != &guest);
+        Ok(state)
+    })?;
+
+    deps.api.debug("Guest removed correctly!!");
     Ok(Response::default())
 }
 
